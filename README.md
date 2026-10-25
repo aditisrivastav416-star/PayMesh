@@ -1,37 +1,49 @@
 # PayMesh
 
-Payment authorization gateway for AI agents. The agent requests a purchase; the backend alone decides whether it is allowed, denied, or needs human approval. PayPal checkout will be initiated only after authorization.
+Payment authorization gateway for AI agents. The backend owns spending decisions and PayPal credentials; the dashboard and demo agent call its API.
 
-## Layout
+## Workspace
 
-| Path | Responsibility |
-| --- | --- |
-| `apps/web` | Next.js owner dashboard |
-| `apps/api` | NestJS API; policy, approvals, budget ledger, audit, and PayPal integration belong here |
-| `apps/agent` | Demo purchasing agent and future MCP client; it only requests payments from the API |
+| Path              | Purpose                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `apps/web`        | Next.js owner dashboard, Tailwind, shadcn/ui components    |
+| `apps/api`        | NestJS API, Prisma, owner sessions, PayPal Sandbox adapter |
+| `apps/agent`      | Demo agent entry point (agent logic comes later)           |
+| `packages/shared` | Types shared by the API and dashboard                      |
 
-The API is the trust boundary. The web app and agent must never hold PayPal credentials or implement spending decisions. A future MCP server should call the same backend request service as REST.
+## Local setup
 
-## Run the skeleton
-
-Requires Node.js 20+ and pnpm 11.
-
-Copy each app's `.env.example` to `.env` in the same directory and fill in credentials as those integrations are implemented. Next.js also accepts `apps/web/.env.local`. Keep real `.env` files out of Git. Only `NEXT_PUBLIC_` values should be exposed to the browser.
+Requires Node.js 20+, pnpm 11, and PostgreSQL tools (`initdb`, `pg_ctl`, `psql`) on `PATH`.
 
 ```sh
 pnpm install
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
+pnpm db:start
+pnpm db:migrate
+pnpm db:seed
 pnpm dev
 ```
 
-Open `http://localhost:3000` for the dashboard shell. The API health endpoint is `http://localhost:3001/health`.
+Before seeding, replace `OWNER_PASSWORD` in `apps/api/.env` with a strong password. The seed command creates or updates the owner and invalidates existing sessions. Open `http://localhost:3000/login`. The API health endpoint is `http://localhost:3001/health`.
 
-## Next implementation slices
+`pnpm db:start` creates a local database cluster at `~/.local/share/paymesh/postgres` and binds it only to `127.0.0.1:5433`. The example local database password is `paymesh`; change `PAYMESH_DB_PASSWORD` and `DATABASE_URL` together before first initialization if you need another value. Run `pnpm db:stop` to stop it. For a hosted PostgreSQL instance, set `DATABASE_URL` and skip `db:start`.
 
-1. Add PostgreSQL/Prisma schema for owners, agents, policies, payment requests, reservations, approvals, and audit events.
-2. Add scoped agent keys and owner authentication before accepting payment requests.
-3. Implement deterministic policy evaluation and atomic budget reservations in the API.
-4. Add exact-request approvals, then PayPal Sandbox order creation and capture.
-5. Expose the API through MCP and connect the demo agent.
+The dashboard uses an HTTP-only owner session cookie. The API checks the session against PostgreSQL on every request; owner login is limited to five attempts per minute. Real `.env` files are ignored by Git. Only `NEXT_PUBLIC_` values are sent to browser code.
 
-No payment request or checkout path is active in this skeleton.
+## PayPal Sandbox
 
+See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth token retrieval and Orders v2 create/capture. A manual `$1.00` smoke test is available once sandbox credentials and buyer approval are ready. Payment endpoints are intentionally not exposed until policy authorization is implemented.
+
+## Checks
+
+```sh
+pnpm build
+pnpm lint
+pnpm format:check
+pnpm --filter @paymesh/api test
+```
+
+## Next product slices
+
+Add agent registration and scoped keys, deterministic policy evaluation, atomic budget reservations, exact-request approvals, payment request audit records, and an MCP server that calls the same backend authorization path.

@@ -3,7 +3,21 @@
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "scripts": {
-    "dev": "pnpm --parallel --filter @paymesh/web --filter @paymesh/api dev",
-    "build": "pnpm --filter @paymesh/api build && pnpm --filter @paymesh/web build && pnpm --filter @paymesh/agent build"
+    "dev": "pnpm --filter @paymesh/shared build && pnpm --parallel --filter @paymesh/web --filter @paymesh/api dev",
+    "build": "pnpm --filter @paymesh/shared build && pnpm --filter @paymesh/api build && pnpm --filter @paymesh/web build && pnpm --filter @paymesh/agent build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:start": "bash scripts/db.sh start",
+    "db:stop": "bash scripts/db.sh stop",
+    "db:migrate": "pnpm --filter @paymesh/api db:migrate",
+    "db:seed": "pnpm --filter @paymesh/api db:seed"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^15.5.0",
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typescript-eslint": "^8.0.0"
   }
 }
