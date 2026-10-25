@@ -1,0 +1,9 @@
+{
+  "name": "paymesh",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @paymesh/web --filter @paymesh/api dev",
+    "build": "pnpm --filter @paymesh/api build && pnpm --filter @paymesh/web build && pnpm --filter @paymesh/agent build"
+  }
+}
