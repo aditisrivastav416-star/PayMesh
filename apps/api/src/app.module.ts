@@ -16,6 +16,7 @@ class HealthController {
 }
 
 @Module({
+  // shortcut: Throttling is per API process; use shared storage when deploying multiple instances.
   imports: [
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 30 }] }),
   ],
