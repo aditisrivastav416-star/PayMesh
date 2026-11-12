@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import type { PaymentRequest } from '@paymesh/shared';
 import { api } from '@/lib/api';
+import { PaymentStatus } from '@/components/payment-status';
+import { ExternalLink, ShieldCheck } from 'lucide-react';
 
 export default function ApprovalsPage() {
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
@@ -34,42 +36,63 @@ export default function ApprovalsPage() {
     }
   }
   return (
-    <div className="max-w-3xl space-y-5">
-      <h1 className="text-3xl font-semibold">Approvals and checkout</h1>
+    <div className="space-y-6">
+      <div>
+        <p className="page-eyebrow">Review queue</p>
+        <h1 className="page-title">Approvals & checkout</h1>
+        <p className="page-subtitle">
+          Review agent requests, start sandbox checkout, and capture after the
+          buyer approves.
+        </p>
+      </div>
       {error && (
-        <p role="alert" className="rounded bg-red-50 p-3 text-red-700">
+        <p role="alert" className="alert-error">
           {error}
         </p>
       )}
       {requests.length === 0 && (
-        <p>No payment requests yet. Run the demo agent to create one.</p>
+        <div className="empty-state">
+          <ShieldCheck className="mx-auto mb-3 text-teal-600" size={28} />
+          <p className="font-semibold text-slate-700">Nothing to review yet</p>
+          <p className="mt-1 text-sm">
+            Run the demo agent to create a request.
+          </p>
+        </div>
       )}
       {requests.map((request) => (
-        <article key={request.id} className="rounded-lg border bg-white p-5">
-          <div className="flex justify-between gap-3">
-            <strong>
-              {request.merchant} · ${(request.amountCents / 100).toFixed(2)}
-            </strong>
-            <span>{request.status.replaceAll('_', ' ')}</span>
+        <article key={request.id} className="panel p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                {request.agent?.name ?? 'Agent'} ·{' '}
+                {new Date(request.createdAt).toLocaleDateString()}
+              </p>
+              <h2 className="mt-2 text-lg font-bold">{request.merchant}</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xl font-bold">
+                ${(request.amountCents / 100).toFixed(2)}
+              </span>
+              <PaymentStatus status={request.status} />
+            </div>
           </div>
-          <p className="mt-2">{request.purpose}</p>
-          <p className="text-sm text-slate-500">
-            Requested by {request.agent?.name ?? 'Agent'}
+          <p className="mt-4 text-sm leading-6 text-slate-600">
+            {request.purpose}
           </p>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
             {request.status === 'PENDING' && (
               <>
                 <button
                   disabled={busy}
                   onClick={() => void act(request.id, 'approve')}
-                  className="rounded bg-blue-700 px-3 py-2 text-white"
+                  className="btn-primary"
                 >
                   Approve
                 </button>
                 <button
                   disabled={busy}
                   onClick={() => void act(request.id, 'reject')}
-                  className="rounded border px-3 py-2"
+                  className="btn-danger"
                 >
                   Reject
                 </button>
@@ -79,7 +102,7 @@ export default function ApprovalsPage() {
               <button
                 disabled={busy}
                 onClick={() => void act(request.id, 'checkout')}
-                className="rounded bg-blue-700 px-3 py-2 text-white"
+                className="btn-primary"
               >
                 Create PayPal checkout
               </button>
@@ -90,14 +113,15 @@ export default function ApprovalsPage() {
                   href={request.approveUrl ?? '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded bg-blue-700 px-3 py-2 text-white"
+                  className="btn-primary"
                 >
-                  Approve in PayPal Sandbox
+                  Approve in PayPal Sandbox{' '}
+                  <ExternalLink size={15} aria-hidden="true" />
                 </a>
                 <button
                   disabled={busy}
                   onClick={() => void act(request.id, 'capture')}
-                  className="rounded border px-3 py-2"
+                  className="btn-secondary"
                 >
                   Capture after buyer approval
                 </button>
@@ -107,7 +131,7 @@ export default function ApprovalsPage() {
               <button
                 disabled={busy}
                 onClick={() => void act(request.id, 'capture')}
-                className="rounded border px-3 py-2"
+                className="btn-secondary"
               >
                 Retry capture
               </button>

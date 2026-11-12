@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import type { PaymentRequest } from '@paymesh/shared';
 import { api } from '@/lib/api';
+import { PaymentStatus } from '@/components/payment-status';
+import { ReceiptText } from 'lucide-react';
 
 export default function PaymentsPage() {
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
@@ -14,30 +16,49 @@ export default function PaymentsPage() {
       .catch((e: Error) => setError(e.message));
   }, []);
   return (
-    <div className="max-w-3xl space-y-5">
-      <h1 className="text-3xl font-semibold">Payment history</h1>
+    <div className="space-y-6">
+      <div>
+        <p className="page-eyebrow">Transaction ledger</p>
+        <h1 className="page-title">Payment history</h1>
+        <p className="page-subtitle">
+          Follow every request from agent proposal to completed sandbox capture.
+        </p>
+      </div>
       {error && (
-        <p role="alert" className="text-red-700">
+        <p role="alert" className="alert-error">
           {error}
         </p>
       )}
-      {requests.length === 0 && <p>No requests yet.</p>}
+      {requests.length === 0 && (
+        <div className="empty-state">
+          <ReceiptText className="mx-auto mb-3 text-teal-600" size={28} />
+          No requests yet.
+        </div>
+      )}
       {requests.map((request) => (
-        <article key={request.id} className="rounded-lg border bg-white p-5">
-          <div className="flex justify-between">
-            <strong>
-              {request.merchant} · ${(request.amountCents / 100).toFixed(2)}
-            </strong>
-            <span>{request.status.replaceAll('_', ' ')}</span>
+        <article key={request.id} className="panel p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                {new Date(request.createdAt).toLocaleString()} ·{' '}
+                {request.agent?.name ?? 'Agent'}
+              </p>
+              <h2 className="mt-2 text-lg font-bold">{request.merchant}</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xl font-bold">
+                ${(request.amountCents / 100).toFixed(2)}
+              </span>
+              <PaymentStatus status={request.status} />
+            </div>
           </div>
-          <p className="mt-2">{request.purpose}</p>
-          <p className="mt-2 text-sm text-slate-500">
-            {new Date(request.createdAt).toLocaleString()} ·{' '}
-            {request.agent?.name ?? 'Agent'}
-          </p>
+          <p className="mt-4 text-sm text-slate-600">{request.purpose}</p>
           {request.captureId && (
-            <p className="mt-2 break-all text-sm">
-              PayPal capture: {request.captureId}
+            <p className="mt-4 break-all border-t border-slate-100 pt-4 text-xs font-medium text-slate-500">
+              PayPal capture ID:{' '}
+              <span className="font-mono text-slate-700">
+                {request.captureId}
+              </span>
             </p>
           )}
         </article>

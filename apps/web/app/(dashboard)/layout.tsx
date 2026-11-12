@@ -2,14 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/server-session';
 import { LogoutButton } from '@/components/logout-button';
-
-const links = [
-  { href: '/', label: 'Overview' },
-  { href: '/agents', label: 'Agents' },
-  { href: '/approvals', label: 'Approvals' },
-  { href: '/payments', label: 'Payments' },
-  { href: '/settings', label: 'Settings' },
-];
+import { DashboardNav } from '@/components/dashboard-nav';
+import { WalletCards } from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -20,31 +14,34 @@ export default async function DashboardLayout({
   if (!owner) redirect('/login');
 
   return (
-    <div className="min-h-screen md:flex">
-      <aside className="w-full border-b border-slate-200 bg-white p-6 md:min-h-screen md:w-64 md:border-r md:border-b-0">
-        <Link href="/" className="text-xl font-bold text-blue-700">
+    <div className="app-shell md:flex">
+      <aside className="sidebar w-full p-5 md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col md:p-6">
+        <Link
+          href="/"
+          className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-white"
+        >
+          <span className="flex size-10 items-center justify-center rounded-xl bg-teal-400 text-slate-900">
+            <WalletCards size={22} aria-hidden="true" />
+          </span>
           PayMesh
         </Link>
-        <nav
-          aria-label="Dashboard"
-          className="mt-8 flex gap-2 overflow-x-auto md:flex-col"
-        >
-          {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-8 border-t border-slate-200 pt-4 text-sm text-slate-500">
-          <p className="truncate">{owner.email}</p>
+        <p className="mt-3 hidden text-xs font-medium tracking-wide text-slate-400 md:block">
+          AI PAYMENT CONTROL
+        </p>
+        <div className="mt-5 md:mt-10">
+          <DashboardNav />
+        </div>
+        <div className="mt-5 border-t border-white/10 pt-5 text-sm text-slate-300 md:mt-auto">
+          <p className="mb-1 text-xs uppercase tracking-widest text-slate-400">
+            Owner account
+          </p>
+          <p className="truncate font-medium text-white">{owner.email}</p>
           <LogoutButton />
         </div>
       </aside>
-      <main className="min-w-0 flex-1 p-6 md:p-10">{children}</main>
+      <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 md:px-10 md:py-10 lg:px-14">
+        <div className="mx-auto max-w-6xl">{children}</div>
+      </main>
     </div>
   );
 }

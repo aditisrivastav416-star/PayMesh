@@ -42,53 +42,48 @@ export default function AgentsPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-4xl space-y-7">
       <div>
-        <h1 className="text-3xl font-semibold">Agents</h1>
-        <p className="mt-2 text-slate-600">
+        <p className="page-eyebrow">Agent access</p>
+        <h1 className="page-title">Agents</h1>
+        <p className="page-subtitle">
           Register agents and manage API keys for payment requests.
         </p>
       </div>
       {error && (
-        <p role="alert" className="rounded-md bg-red-50 p-3 text-red-700">
+        <p role="alert" className="alert-error">
           {error}
         </p>
       )}
-      <form
-        onSubmit={create}
-        className="space-y-3 rounded-lg border border-slate-200 bg-white p-5"
-      >
-        <h2 className="text-lg font-semibold">Register agent</h2>
-        <label className="block text-sm font-medium">
+      <form onSubmit={create} className="panel space-y-4 p-6">
+        <h2 className="text-lg font-bold">Register an agent</h2>
+        <label className="field-label">
           Name
           <input
             required
             maxLength={100}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-slate-300 p-2"
+            className="field"
           />
         </label>
-        <label className="block text-sm font-medium">
+        <label className="field-label">
           Description (optional)
           <textarea
             maxLength={500}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-slate-300 p-2"
+            className="field"
           />
         </label>
-        <button
-          disabled={busy}
-          className="rounded-md bg-blue-700 px-4 py-2 text-white disabled:opacity-50"
-        >
+        <button disabled={busy} className="btn-primary">
           Create agent
         </button>
       </form>
       {issued && (
         <div
           role="status"
-          className="rounded-lg border border-amber-300 bg-amber-50 p-5"
+          className="rounded-2xl border border-amber-200 bg-amber-50 p-6"
         >
           <h2 className="font-semibold">Copy this key now</h2>
           <p className="mt-1 text-sm">
@@ -99,22 +94,22 @@ export default function AgentsPage() {
           </code>
           <button
             onClick={() => setIssued(null)}
-            className="mt-3 text-sm text-blue-700 underline"
+            className="mt-3 text-sm font-semibold text-teal-700 underline"
           >
             I have saved it
           </button>
         </div>
       )}
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Registered agents</h2>
-        {agents.length === 0 && (
-          <p className="text-slate-600">No agents yet.</p>
-        )}
+        <h2 className="text-lg font-bold">
+          Registered agents{' '}
+          <span className="ml-2 text-sm font-medium text-slate-400">
+            {agents.length}
+          </span>
+        </h2>
+        {agents.length === 0 && <p className="empty-state">No agents yet.</p>}
         {agents.map((agent) => (
-          <article
-            key={agent.id}
-            className="rounded-lg border border-slate-200 bg-white p-5"
-          >
+          <article key={agent.id} className="panel p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="font-semibold">
@@ -138,7 +133,7 @@ export default function AgentsPage() {
                         setIssued(await api.issueAgentKey(agent.id));
                       })
                     }
-                    className="text-sm text-blue-700 disabled:opacity-50"
+                    className="text-sm font-semibold text-teal-700 hover:underline disabled:opacity-50"
                   >
                     Create key
                   </button>
@@ -156,7 +151,7 @@ export default function AgentsPage() {
                           }),
                         );
                     }}
-                    className="text-sm text-red-700 disabled:opacity-50"
+                    className="text-sm font-semibold text-red-700 hover:underline disabled:opacity-50"
                   >
                     Deactivate
                   </button>
@@ -187,7 +182,7 @@ export default function AgentsPage() {
                           }),
                         )
                       }
-                      className="text-red-700 disabled:opacity-50"
+                      className="font-semibold text-red-700 hover:underline disabled:opacity-50"
                     >
                       Revoke
                     </button>

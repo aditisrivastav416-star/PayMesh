@@ -27,33 +27,31 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto mt-24 max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <p className="text-sm font-bold tracking-widest text-blue-700 uppercase">
-        PayMesh
-      </p>
-      <h1 className="mt-3 text-3xl font-semibold">Owner sign in</h1>
-      <p className="mt-2 text-slate-600">
+    <main className="panel mx-auto mt-16 max-w-md p-8 sm:mt-24 sm:p-10">
+      <p className="page-eyebrow">PayMesh</p>
+      <h1 className="page-title">Welcome back</h1>
+      <p className="page-subtitle">
         Manage agent permissions and payment approvals.
       </p>
       <form onSubmit={submit} className="mt-8 space-y-4">
-        <label className="block text-sm font-medium">
+        <label className="field-label">
           Email
           <input
             name="email"
             type="email"
             autoComplete="username"
             required
-            className="mt-1 w-full rounded-md border border-slate-300 p-2"
+            className="field"
           />
         </label>
-        <label className="block text-sm font-medium">
+        <label className="field-label">
           Password
           <input
             name="password"
             type="password"
             autoComplete="current-password"
             required
-            className="mt-1 w-full rounded-md border border-slate-300 p-2"
+            className="field"
           />
         </label>
         {error && (
