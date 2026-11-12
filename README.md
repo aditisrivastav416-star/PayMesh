@@ -48,6 +48,8 @@ See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth 
 
 PayMesh makes the authorization decision; the AI only picks a catalog item. The catalog is fictional and no product is delivered. All PayPal calls use Sandbox. PayPal buyer approval is required before capture. If checkout or capture fails temporarily, retry the action on the same request; PayPal request IDs make those retries idempotent.
 
+The demo agent uses Gemini by default. Set `DEEPSEEK_API_KEY` to let it fall back to DeepSeek only when Gemini times out, cannot be reached, is rate limited, or returns a server error. Invalid Gemini credentials stop the run instead of falling back.
+
 ## Hackathon submission
 
 Publish this repository with the root [MIT license](LICENSE). Include this setup guide, a short project description, and the AI model used in your Devpost entry. Record a public YouTube video under three minutes showing the AI choice, pending approval, sandbox buyer approval, and completed payment. Add the video and public repository links to the submission. A static mockup alone does not meet the functional demo requirement.

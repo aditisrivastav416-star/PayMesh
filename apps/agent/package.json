@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "demo": "node --env-file=.env dist/index.js"
+    "demo": "node --env-file=.env dist/index.js",
+    "test": "pnpm build && node --test test/*.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
