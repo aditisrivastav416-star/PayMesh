@@ -22,6 +22,7 @@ cp apps/web/.env.example apps/web/.env.local
 pnpm db:start
 pnpm db:migrate
 pnpm db:seed
+pnpm build
 pnpm dev
 ```
 
@@ -42,7 +43,7 @@ See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth 
 1. Complete local setup above, configure sandbox business app credentials in `apps/api/.env`, and use a separate sandbox personal buyer account.
 2. On `/agents`, register an agent and create its key. Copy `apps/agent/.env.example` to `apps/agent/.env`, then set `PAYMESH_AGENT_API_KEY` and `GEMINI_API_KEY`. Never commit either key.
 3. On `/settings`, set the per-purchase limit to `1.00` USD.
-4. Run `pnpm build`, then `pnpm --filter @paymesh/agent demo -- --budget 1.50 "Find something I can write notes in"`. The AI compares five priced sandbox items and selects a matching item within budget. Its goal and reason appear on `/approvals`. A $1.00 notebook should appear as **READY**.
+4. Run `pnpm --filter @paymesh/agent demo -- --budget 1.50 "Find something I can write notes in"`. The AI compares five priced sandbox items and selects a matching item within budget. Its goal and reason appear on `/approvals`. A $1.00 notebook should appear as **READY**.
 5. Run `pnpm --filter @paymesh/agent demo -- --budget 2.00 "I need headphones"`. The $2.00 request should appear as **PENDING**. Approve it (or reject it to demonstrate denial). Try `--budget 1.00 "I need a desk lamp"` to show the agent declining an unaffordable request without submitting a payment.
 6. For a READY request, click **Create PayPal checkout**, then **Approve in PayPal Sandbox**. Sign in as the sandbox buyer and approve. Return to PayMesh and click **Capture after buyer approval**. The completed capture appears on `/payments`.
 
