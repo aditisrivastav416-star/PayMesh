@@ -9,25 +9,27 @@ import {
   Clock3,
   ShieldCheck,
 } from 'lucide-react';
-import type { PaymentRequest } from '@paymesh/shared';
+import type { PaymentRequest, PaymentSummary } from '@paymesh/shared';
 import { api } from '@/lib/api';
 import { PaymentStatus } from '@/components/payment-status';
 
 export default function OverviewPage() {
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
+  const [summary, setSummary] = useState<PaymentSummary>({
+    total: 0,
+    pending: 0,
+    completed: 0,
+    completedCents: 0,
+  });
   const [error, setError] = useState('');
   useEffect(() => {
-    void api
-      .paymentRequests()
-      .then(setRequests)
+    void Promise.all([api.paymentRequests(undefined, 4), api.paymentSummary()])
+      .then(([page, totals]) => {
+        setRequests(page.items);
+        setSummary(totals);
+      })
       .catch((e: Error) => setError(e.message));
   }, []);
-  const pending = requests.filter(
-    (request) => request.status === 'PENDING',
-  ).length;
-  const completed = requests.filter(
-    (request) => request.status === 'COMPLETED',
-  );
   return (
     <div className="space-y-8">
       <div>
@@ -50,21 +52,21 @@ export default function OverviewPage() {
         {[
           {
             label: 'Total requests',
-            value: requests.length,
+            value: summary.total,
             icon: Bot,
             note: 'Submitted by agents',
           },
           {
             label: 'Needs approval',
-            value: pending,
+            value: summary.pending,
             icon: Clock3,
             note: 'Waiting for your decision',
           },
           {
             label: 'Completed',
-            value: completed.length,
+            value: summary.completed,
             icon: CircleCheck,
-            note: `$${(completed.reduce((sum, item) => sum + item.amountCents, 0) / 100).toFixed(2)} in sandbox payments`,
+            note: `$${(summary.completedCents / 100).toFixed(2)} in sandbox payments`,
           },
         ].map(({ label, value, icon: Icon, note }) => (
           <div key={label} className="panel p-5">

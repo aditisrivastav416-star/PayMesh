@@ -47,9 +47,13 @@ See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth 
 5. Run `pnpm --filter @paymesh/agent demo -- --budget 2.00 "I need headphones"`. The $2.00 request should appear as **PENDING**. Approve it (or reject it to demonstrate denial). Try `--budget 1.00 "I need a desk lamp"` to show the agent declining an unaffordable request without submitting a payment.
 6. For a READY request, click **Create PayPal checkout**, then **Approve in PayPal Sandbox**. Sign in as the sandbox buyer and approve. Return to PayMesh and click **Capture after buyer approval**. The completed capture appears on `/payments`.
 
-PayMesh makes the authorization decision; the AI compares catalog items against the user's goal and budget, explains its choice, or declines. Prices are fixed in code and checked after the model responds. The catalog is fictional and no product is delivered. All PayPal calls use Sandbox. PayPal buyer approval is required before capture. If checkout or capture fails temporarily, retry the action on the same request; PayPal request IDs make those retries idempotent.
+PayMesh makes the authorization decision; the AI compares catalog items against the user's goal and budget, explains its choice, or declines. Prices are fixed in code and checked after the model responds. The catalog is fictional and no product is delivered. All PayPal calls use Sandbox. PayPal buyer approval is required before capture. Checkout and capture claim a request before calling PayPal, so simultaneous clicks cannot start duplicate calls. If a call is interrupted, wait 30 seconds and retry the same request; PayPal request IDs make those retries idempotent.
 
 The demo agent uses Gemini by default. Set `DEEPSEEK_API_KEY` to let it fall back to DeepSeek only when Gemini times out, cannot be reached, is rate limited, or returns a server error. Invalid Gemini credentials stop the run instead of falling back.
+
+## Payment API
+
+Owner session endpoints support `GET /payment-requests?limit=20&cursor=<id>` (up to 50 per page) and `GET /payment-requests/summary`. The page response has `items` and `nextCursor`; the summary returns counts and completed USD cents. The dashboard loads recent activity first, then offers **Load more** for the ledger. PayPal calls have a 15-second network timeout, and simultaneous requests share one cached OAuth refresh.
 
 ## Hackathon submission
 

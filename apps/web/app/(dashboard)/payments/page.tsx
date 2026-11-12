@@ -8,13 +8,31 @@ import { ReceiptText } from 'lucide-react';
 
 export default function PaymentsPage() {
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     void api
       .paymentRequests()
-      .then(setRequests)
+      .then((page) => {
+        setRequests(page.items);
+        setNextCursor(page.nextCursor);
+      })
       .catch((e: Error) => setError(e.message));
   }, []);
+  async function loadMore() {
+    if (!nextCursor) return;
+    setLoading(true);
+    try {
+      const page = await api.paymentRequests(nextCursor);
+      setRequests((current) => [...current, ...page.items]);
+      setNextCursor(page.nextCursor);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load payments');
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <div className="space-y-6">
       <div>
@@ -78,6 +96,15 @@ export default function PaymentsPage() {
           )}
         </article>
       ))}
+      {nextCursor && (
+        <button
+          disabled={loading}
+          onClick={() => void loadMore()}
+          className="btn-secondary"
+        >
+          Load more payments
+        </button>
+      )}
     </div>
   );
 }

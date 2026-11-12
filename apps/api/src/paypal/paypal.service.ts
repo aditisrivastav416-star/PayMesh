@@ -12,6 +12,7 @@ type PayPalOrder = {
 @Injectable()
 export class PayPalService {
   private token?: { value: string; expiresAt: number };
+  private tokenPromise?: Promise<string>;
 
   private get baseUrl() {
     if (process.env.PAYPAL_ENV !== 'sandbox')
@@ -22,6 +23,14 @@ export class PayPalService {
   async accessToken(): Promise<string> {
     if (this.token && this.token.expiresAt > Date.now())
       return this.token.value;
+    if (!this.tokenPromise)
+      this.tokenPromise = this.fetchToken().finally(() => {
+        this.tokenPromise = undefined;
+      });
+    return this.tokenPromise;
+  }
+
+  private async fetchToken(): Promise<string> {
     const clientId = process.env.PAYPAL_CLIENT_ID;
     const secret = process.env.PAYPAL_CLIENT_SECRET;
     if (
@@ -36,6 +45,7 @@ export class PayPalService {
     }
     const response = await fetch(`${this.baseUrl}/v1/oauth2/token`, {
       method: 'POST',
+      signal: AbortSignal.timeout(15_000),
       headers: {
         Authorization: `Basic ${Buffer.from(`${clientId}:${secret}`).toString('base64')}`,
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -64,6 +74,7 @@ export class PayPalService {
   ): Promise<PayPalOrder> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
+      signal: AbortSignal.timeout(15_000),
       headers: {
         Authorization: `Bearer ${await this.accessToken()}`,
         'Content-Type': 'application/json',

@@ -68,7 +68,7 @@ model PaymentRequest {
   owner       User     @relation(fields: [ownerId], references: [id])
   agent       Agent    @relation(fields: [agentId], references: [id])
 
-  @@index([ownerId, createdAt])
+  @@index([ownerId, createdAt(sort: Desc), id(sort: Desc)])
 }
 
 model AgentApiKey {

@@ -8,14 +8,31 @@ import { ExternalLink, ShieldCheck } from 'lucide-react';
 
 export default function ApprovalsPage() {
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     void api
       .paymentRequests()
-      .then(setRequests)
+      .then((page) => {
+        setRequests(page.items);
+        setNextCursor(page.nextCursor);
+      })
       .catch((e: Error) => setError(e.message));
   }, []);
+  async function loadMore() {
+    if (!nextCursor) return;
+    setBusy(true);
+    try {
+      const page = await api.paymentRequests(nextCursor);
+      setRequests((current) => [...current, ...page.items]);
+      setNextCursor(page.nextCursor);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load requests');
+    } finally {
+      setBusy(false);
+    }
+  }
   async function act(
     id: string,
     action: 'approve' | 'reject' | 'checkout' | 'capture',
@@ -154,6 +171,15 @@ export default function ApprovalsPage() {
           </div>
         </article>
       ))}
+      {nextCursor && (
+        <button
+          disabled={busy}
+          onClick={() => void loadMore()}
+          className="btn-secondary"
+        >
+          Load more requests
+        </button>
+      )}
     </div>
   );
 }

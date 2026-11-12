@@ -67,3 +67,24 @@ test('rejects invalid amounts before contacting PayPal', async () => {
     /Amount must be/,
   );
 });
+
+test('simultaneous PayPal calls share one OAuth request', async () => {
+  process.env.PAYPAL_ENV = 'sandbox';
+  process.env.PAYPAL_CLIENT_ID = 'sandbox-id';
+  process.env.PAYPAL_CLIENT_SECRET = 'sandbox-secret';
+  let calls = 0;
+  global.fetch = async () => {
+    calls++;
+    await new Promise((resolve) => setImmediate(resolve));
+    return new Response(
+      JSON.stringify({ access_token: 'token', expires_in: 3600 }),
+      { status: 200 },
+    );
+  };
+  const paypal = new PayPalService();
+  assert.deepEqual(
+    await Promise.all([paypal.accessToken(), paypal.accessToken()]),
+    ['token', 'token'],
+  );
+  assert.equal(calls, 1);
+});

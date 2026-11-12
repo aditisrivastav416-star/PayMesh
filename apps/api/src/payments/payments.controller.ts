@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
@@ -38,8 +39,19 @@ export class PaymentsController {
   }
 
   @Get('payment-requests')
-  list(@Req() request: Request) {
-    return this.owner(request).then((id) => this.payments.list(id));
+  list(
+    @Req() request: Request,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.owner(request).then((id) =>
+      this.payments.list(id, cursor, limit),
+    );
+  }
+
+  @Get('payment-requests/summary')
+  summary(@Req() request: Request) {
+    return this.owner(request).then((id) => this.payments.summary(id));
   }
 
   @Post('payment-requests/:id/approve')

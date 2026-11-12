@@ -3,7 +3,9 @@ import type {
   ApiErrorResponse,
   IssuedAgentKey,
   OwnerSession,
+  PaymentPage,
   PaymentRequest,
+  PaymentSummary,
 } from '@paymesh/shared';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -24,7 +26,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  paymentRequests: () => request<PaymentRequest[]>('/payment-requests'),
+  paymentRequests: (cursor?: string, limit = 20) =>
+    request<PaymentPage>(
+      `/payment-requests?limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
+    ),
+  paymentSummary: () => request<PaymentSummary>('/payment-requests/summary'),
   paymentAction: (
     id: string,
     action: 'approve' | 'reject' | 'checkout' | 'capture',

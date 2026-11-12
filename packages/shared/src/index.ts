@@ -38,6 +38,16 @@ export type PaymentRequest = {
   captureId: string | null;
   createdAt: string;
 };
+export type PaymentPage = {
+  items: PaymentRequest[];
+  nextCursor: string | null;
+};
+export type PaymentSummary = {
+  total: number;
+  pending: number;
+  completed: number;
+  completedCents: number;
+};
 export type ApiErrorResponse = {
   statusCode: number;
   message: string;
