@@ -8,7 +8,7 @@ Payment authorization gateway for AI agents. The backend owns spending decisions
 | ----------------- | ---------------------------------------------------------- |
 | `apps/web`        | Next.js owner dashboard, Tailwind, shadcn/ui components    |
 | `apps/api`        | NestJS API, Prisma, owner sessions, PayPal Sandbox adapter |
-| `apps/agent`      | Demo agent entry point (agent logic comes later)           |
+| `apps/agent`      | AI demo agent with a two-item sandbox catalog              |
 | `packages/shared` | Types shared by the API and dashboard                      |
 
 ## Local setup
@@ -31,9 +31,26 @@ Before seeding, replace `OWNER_PASSWORD` in `apps/api/.env` with a strong passwo
 
 The dashboard uses an HTTP-only owner session cookie. The API checks the session against PostgreSQL on every request; owner login is limited to five attempts per minute. Real `.env` files are ignored by Git. Only `NEXT_PUBLIC_` values are sent to browser code.
 
+After pulling changes, run `pnpm db:migrate`. On the Agents page, register an agent and create a key. Copy it when shown; PayMesh stores only its hash. Put it in `PAYMESH_AGENT_API_KEY` in `apps/agent/.env`. Revoking a key or deactivating an agent blocks later authentication.
+
 ## PayPal Sandbox
 
-See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth token retrieval and Orders v2 create/capture. A manual `$1.00` smoke test is available once sandbox credentials and buyer approval are ready. Payment endpoints are intentionally not exposed until policy authorization is implemented.
+See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth token retrieval and Orders v2 create/capture. A manual `$1.00` smoke test is available once sandbox credentials and buyer approval are ready.
+
+## Demo: AI agent to PayPal Sandbox
+
+1. Complete local setup above, configure sandbox business app credentials in `apps/api/.env`, and use a separate sandbox personal buyer account.
+2. On `/agents`, register an agent and create its key. Copy `apps/agent/.env.example` to `apps/agent/.env`, then set `PAYMESH_AGENT_API_KEY` and `GEMINI_API_KEY`. Never commit either key.
+3. On `/settings`, set the per-purchase limit to `1.00` USD.
+4. Run `pnpm build`, then `pnpm --filter @paymesh/agent demo -- "Buy a notebook"`. The AI chooses from the fixed demo catalog and submits a $1.00 request. It should appear as **READY** on `/approvals`.
+5. Run `pnpm --filter @paymesh/agent demo -- "Buy headphones"`. The $2.00 request should appear as **PENDING**. Approve it (or reject it to demonstrate denial).
+6. For a READY request, click **Create PayPal checkout**, then **Approve in PayPal Sandbox**. Sign in as the sandbox buyer and approve. Return to PayMesh and click **Capture after buyer approval**. The completed capture appears on `/payments`.
+
+PayMesh makes the authorization decision; the AI only picks a catalog item. The catalog is fictional and no product is delivered. All PayPal calls use Sandbox. PayPal buyer approval is required before capture. If checkout or capture fails temporarily, retry the action on the same request; PayPal request IDs make those retries idempotent.
+
+## Hackathon submission
+
+Publish this repository with the root [MIT license](LICENSE). Include this setup guide, a short project description, and the AI model used in your Devpost entry. Record a public YouTube video under three minutes showing the AI choice, pending approval, sandbox buyer approval, and completed payment. Add the video and public repository links to the submission. A static mockup alone does not meet the functional demo requirement.
 
 ## Checks
 
@@ -44,6 +61,6 @@ pnpm format:check
 pnpm --filter @paymesh/api test
 ```
 
-## Next product slices
+## Current limits
 
-Add agent registration and scoped keys, deterministic policy evaluation, atomic budget reservations, exact-request approvals, payment request audit records, and an MCP server that calls the same backend authorization path.
+The MVP has one per-purchase limit, USD Sandbox checkout, and an owner-assisted buyer approval/capture flow. It does not implement cumulative budgets or production payments.

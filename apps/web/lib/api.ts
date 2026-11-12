@@ -1,4 +1,10 @@
-import type { ApiErrorResponse, OwnerSession } from '@paymesh/shared';
+import type {
+  Agent,
+  ApiErrorResponse,
+  IssuedAgentKey,
+  OwnerSession,
+  PaymentRequest,
+} from '@paymesh/shared';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -18,6 +24,38 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  paymentRequests: () => request<PaymentRequest[]>('/payment-requests'),
+  paymentAction: (
+    id: string,
+    action: 'approve' | 'reject' | 'checkout' | 'capture',
+  ) =>
+    request<PaymentRequest>(`/payment-requests/${id}/${action}`, {
+      method: 'POST',
+    }),
+  spendingLimit: () =>
+    request<{ spendingLimitCents: number }>('/settings/limit'),
+  setSpendingLimit: (limit: string) =>
+    request<{ spendingLimitCents: number }>('/settings/limit', {
+      method: 'PUT',
+      body: JSON.stringify({ limit }),
+    }),
+  agents: () => request<Agent[]>('/agents'),
+  createAgent: (name: string, description: string) =>
+    request<Agent>('/agents', {
+      method: 'POST',
+      body: JSON.stringify({ name, description }),
+    }),
+  issueAgentKey: (agentId: string) =>
+    request<IssuedAgentKey>(`/agents/${agentId}/keys`, {
+      method: 'POST',
+      body: JSON.stringify({ scopes: ['payment_requests:create'] }),
+    }),
+  revokeAgentKey: (agentId: string, keyId: string) =>
+    request<{ status: 'ok' }>(`/agents/${agentId}/keys/${keyId}`, {
+      method: 'DELETE',
+    }),
+  deactivateAgent: (agentId: string) =>
+    request<{ status: 'ok' }>(`/agents/${agentId}`, { method: 'DELETE' }),
   login: (email: string, password: string) =>
     request<OwnerSession>('/auth/login', {
       method: 'POST',
