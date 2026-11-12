@@ -26,10 +26,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  paymentRequests: (cursor?: string, limit = 20) =>
-    request<PaymentPage>(
+  paymentRequests: async (
+    cursor?: string,
+    limit = 20,
+  ): Promise<PaymentPage> => {
+    const result = await request<PaymentPage | PaymentRequest[]>(
       `/payment-requests?limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
-    ),
+    );
+    if (Array.isArray(result)) return { items: result, nextCursor: null };
+    if (!result || !Array.isArray(result.items))
+      throw new Error('Unexpected payment response. Restart the PayMesh API.');
+    return result;
+  },
   paymentSummary: () => request<PaymentSummary>('/payment-requests/summary'),
   paymentAction: (
     id: string,
