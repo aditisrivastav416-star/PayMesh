@@ -21,6 +21,9 @@ export class PaymentsService {
     const amount = body?.amount;
     const purpose = body?.purpose;
     const merchant = body?.merchant;
+    const task = body?.task;
+    const aiReason = body?.aiReason;
+    const aiProvider = body?.aiProvider;
     if (
       typeof amount !== 'string' ||
       !/^(?:0|[1-9]\d*)\.\d{2}$/.test(amount) ||
@@ -31,7 +34,16 @@ export class PaymentsService {
       purpose.length > 500 ||
       typeof merchant !== 'string' ||
       !merchant.trim() ||
-      merchant.length > 100
+      merchant.length > 100 ||
+      (task !== undefined &&
+        (typeof task !== 'string' || !task.trim() || task.length > 500)) ||
+      (aiReason !== undefined &&
+        (typeof aiReason !== 'string' ||
+          !aiReason.trim() ||
+          aiReason.length > 400)) ||
+      (aiProvider !== undefined &&
+        aiProvider !== 'Gemini' &&
+        aiProvider !== 'DeepSeek')
     )
       throw new BadRequestException(
         'Valid USD amount, purpose and merchant are required',
@@ -46,6 +58,9 @@ export class PaymentsService {
         amountCents: Number(amount.replace('.', '')),
         purpose: purpose.trim(),
         merchant: merchant.trim(),
+        task: typeof task === 'string' ? task.trim() : null,
+        aiReason: typeof aiReason === 'string' ? aiReason.trim() : null,
+        aiProvider: typeof aiProvider === 'string' ? aiProvider : null,
         status:
           Number(amount.replace('.', '')) <= owner.spendingLimitCents
             ? 'READY'

@@ -29,6 +29,9 @@ export type PaymentRequest = {
   amountCents: number;
   purpose: string;
   merchant: string;
+  task: string | null;
+  aiReason: string | null;
+  aiProvider: string | null;
   status: string;
   approveUrl: string | null;
   orderId: string | null;

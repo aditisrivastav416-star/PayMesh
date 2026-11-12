@@ -46,3 +46,47 @@ test('DeepSeek is used only for temporary Gemini failures', async () => {
     else globalThis.process.env.DEEPSEEK_API_KEY = originalKey;
   }
 });
+
+test('catalog decisions respect the stated budget and can decline', async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () =>
+      new globalThis.Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  { text: '{"item":"none","reason":"Nothing fits the goal"}' },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    assert.equal(
+      (await agent.choose('buy a camera', 'gemini-key', 100)).item,
+      'none',
+    );
+    globalThis.fetch = async () =>
+      new globalThis.Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  { text: '{"item":"lamp","reason":"A desk lamp fits"}' },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    await assert.rejects(
+      agent.choose('buy a lamp', 'gemini-key', 100),
+      /above the stated budget/,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

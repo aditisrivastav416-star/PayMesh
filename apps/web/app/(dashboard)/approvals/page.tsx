@@ -79,6 +79,21 @@ export default function ApprovalsPage() {
           <p className="mt-4 text-sm leading-6 text-slate-600">
             {request.purpose}
           </p>
+          {request.aiReason && (
+            <div className="mt-4 rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-teal-700">
+                {request.aiProvider} decision
+              </p>
+              {request.task && (
+                <p className="mt-2 text-sm text-slate-600">
+                  Goal: {request.task}
+                </p>
+              )}
+              <p className="mt-1 text-sm font-medium text-slate-800">
+                {request.aiReason}
+              </p>
+            </div>
+          )}
           <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
             {request.status === 'PENDING' && (
               <>

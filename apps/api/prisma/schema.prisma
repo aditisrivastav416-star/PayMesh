@@ -8,15 +8,15 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid()) @db.Uuid
-  email        String         @unique
-  passwordHash String         @map("password_hash")
-  active       Boolean        @default(true)
-  createdAt    DateTime       @default(now()) @map("created_at")
-  agents       Agent[]
-  sessions     OwnerSession[]
-  paymentRequests PaymentRequest[]
-  spendingLimitCents Int @default(100)
+  id                 String           @id @default(uuid()) @db.Uuid
+  email              String           @unique
+  passwordHash       String           @map("password_hash")
+  active             Boolean          @default(true)
+  createdAt          DateTime         @default(now()) @map("created_at")
+  agents             Agent[]
+  sessions           OwnerSession[]
+  paymentRequests    PaymentRequest[]
+  spendingLimitCents Int              @default(100)
 
   @@map("users")
 }
@@ -34,15 +34,15 @@ model OwnerSession {
 }
 
 model Agent {
-  id            String        @id @default(uuid()) @db.Uuid
-  ownerId       String        @map("owner_id") @db.Uuid
-  name          String
-  description   String?
-  active        Boolean       @default(true)
-  createdAt     DateTime      @default(now()) @map("created_at")
-  deactivatedAt DateTime?     @map("deactivated_at")
-  owner         User          @relation(fields: [ownerId], references: [id])
-  keys          AgentApiKey[]
+  id              String           @id @default(uuid()) @db.Uuid
+  ownerId         String           @map("owner_id") @db.Uuid
+  name            String
+  description     String?
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  deactivatedAt   DateTime?        @map("deactivated_at")
+  owner           User             @relation(fields: [ownerId], references: [id])
+  keys            AgentApiKey[]
   paymentRequests PaymentRequest[]
 
   @@index([ownerId])
@@ -50,20 +50,23 @@ model Agent {
 }
 
 model PaymentRequest {
-  id String @id @default(uuid()) @db.Uuid
-  ownerId String @db.Uuid
-  agentId String @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
+  ownerId     String   @db.Uuid
+  agentId     String   @db.Uuid
   amountCents Int
-  purpose String
-  merchant String
-  status String
-  orderId String? @unique
-  approveUrl String?
-  captureId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  owner User @relation(fields: [ownerId], references: [id])
-  agent Agent @relation(fields: [agentId], references: [id])
+  purpose     String
+  merchant    String
+  task        String?
+  aiReason    String?
+  aiProvider  String?
+  status      String
+  orderId     String?  @unique
+  approveUrl  String?
+  captureId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       User     @relation(fields: [ownerId], references: [id])
+  agent       Agent    @relation(fields: [agentId], references: [id])
 
   @@index([ownerId, createdAt])
 }

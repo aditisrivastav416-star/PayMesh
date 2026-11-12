@@ -8,7 +8,7 @@ Payment authorization gateway for AI agents. The backend owns spending decisions
 | ----------------- | ---------------------------------------------------------- |
 | `apps/web`        | Next.js owner dashboard, Tailwind, shadcn/ui components    |
 | `apps/api`        | NestJS API, Prisma, owner sessions, PayPal Sandbox adapter |
-| `apps/agent`      | AI demo agent with a two-item sandbox catalog              |
+| `apps/agent`      | Goal-driven AI demo agent with a priced sandbox catalog    |
 | `packages/shared` | Types shared by the API and dashboard                      |
 
 ## Local setup
@@ -42,11 +42,11 @@ See [sandbox setup](docs/paypal-sandbox.md). The backend adapter supports OAuth 
 1. Complete local setup above, configure sandbox business app credentials in `apps/api/.env`, and use a separate sandbox personal buyer account.
 2. On `/agents`, register an agent and create its key. Copy `apps/agent/.env.example` to `apps/agent/.env`, then set `PAYMESH_AGENT_API_KEY` and `GEMINI_API_KEY`. Never commit either key.
 3. On `/settings`, set the per-purchase limit to `1.00` USD.
-4. Run `pnpm build`, then `pnpm --filter @paymesh/agent demo -- "Buy a notebook"`. The AI chooses from the fixed demo catalog and submits a $1.00 request. It should appear as **READY** on `/approvals`.
-5. Run `pnpm --filter @paymesh/agent demo -- "Buy headphones"`. The $2.00 request should appear as **PENDING**. Approve it (or reject it to demonstrate denial).
+4. Run `pnpm build`, then `pnpm --filter @paymesh/agent demo -- --budget 1.50 "Find something I can write notes in"`. The AI compares five priced sandbox items and selects a matching item within budget. Its goal and reason appear on `/approvals`. A $1.00 notebook should appear as **READY**.
+5. Run `pnpm --filter @paymesh/agent demo -- --budget 2.00 "I need headphones"`. The $2.00 request should appear as **PENDING**. Approve it (or reject it to demonstrate denial). Try `--budget 1.00 "I need a desk lamp"` to show the agent declining an unaffordable request without submitting a payment.
 6. For a READY request, click **Create PayPal checkout**, then **Approve in PayPal Sandbox**. Sign in as the sandbox buyer and approve. Return to PayMesh and click **Capture after buyer approval**. The completed capture appears on `/payments`.
 
-PayMesh makes the authorization decision; the AI only picks a catalog item. The catalog is fictional and no product is delivered. All PayPal calls use Sandbox. PayPal buyer approval is required before capture. If checkout or capture fails temporarily, retry the action on the same request; PayPal request IDs make those retries idempotent.
+PayMesh makes the authorization decision; the AI compares catalog items against the user's goal and budget, explains its choice, or declines. Prices are fixed in code and checked after the model responds. The catalog is fictional and no product is delivered. All PayPal calls use Sandbox. PayPal buyer approval is required before capture. If checkout or capture fails temporarily, retry the action on the same request; PayPal request IDs make those retries idempotent.
 
 The demo agent uses Gemini by default. Set `DEEPSEEK_API_KEY` to let it fall back to DeepSeek only when Gemini times out, cannot be reached, is rate limited, or returns a server error. Invalid Gemini credentials stop the run instead of falling back.
 
@@ -61,6 +61,7 @@ pnpm build
 pnpm lint
 pnpm format:check
 pnpm --filter @paymesh/api test
+pnpm --filter @paymesh/agent test
 ```
 
 ## Current limits

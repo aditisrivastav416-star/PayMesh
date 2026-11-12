@@ -52,6 +52,18 @@ test('payment requests enforce the limit and an approved request reaches PayPal 
     ),
     { status: 400 },
   );
+  await assert.rejects(
+    service.create(
+      { id: 'agent', ownerId },
+      {
+        amount: '1.00',
+        merchant: 'Store',
+        purpose: 'Item',
+        aiProvider: 'unknown',
+      },
+    ),
+    { status: 400 },
+  );
   const created = await service.create(
     { id: 'agent', ownerId },
     { amount: '2.00', merchant: 'Store', purpose: 'Item' },
